@@ -30,6 +30,8 @@ type cell struct {
 	notify        func(ChangedInfo)
 }
 
+// canPress return true if can press
+// and set `c.pressed` tp true
 func (c *cell) canPress() (pressed bool) {
 	c.pressedMux.Lock()
 	defer c.pressedMux.Unlock()
@@ -40,6 +42,11 @@ func (c *cell) canPress() (pressed bool) {
 	c.pressed = true
 	return
 }
+
+// press is called when cell pressed
+// - if cell has bomb, call notify, return soon
+// - if cell with a bomb nearby, call notify, return soon
+// - if other cell, call send
 func (c *cell) press(ignore position) ChangedInfo {
 	if c.hasBomb {
 		ci := toCangeInfo(c.position)
@@ -59,6 +66,8 @@ func (c *cell) press(ignore position) ChangedInfo {
 	}
 	return c.send(ignore)
 }
+
+// send send `ChangeInfo` except `ignore` and notify own
 func (c *cell) send(ignore position) ChangedInfo {
 	ci := ChangedInfo{X: c.position.column, Y: c.position.row}
 	for p, ch := range c.to {
@@ -75,6 +84,8 @@ func (c *cell) send(ignore position) ChangedInfo {
 	c.notify(ci)
 	return ci
 }
+
+// responseRecievedMessage response recieved message
 func (c *cell) responseRecievedMessage(recieved ChangedInfo) {
 	c.sendMux.Lock()
 	defer c.sendMux.Unlock()
@@ -85,6 +96,9 @@ func (c *cell) responseRecievedMessage(recieved ChangedInfo) {
 		close(c.responseCh)
 	}
 }
+
+// wake start goroutine each `cell.from`.
+// when there goroutine recieve messsage, response.
 func (c *cell) wake(h, w int) {
 	for n, cf := range c.from {
 		go func(hh, ww int, nn position, ccf <-chan ChangedInfo) {
@@ -167,9 +181,13 @@ func New(h, w, maxBombNum int) *Minesweeper {
 	m.sendCh = make(chan (<-chan ChangedInfo))
 	return &m
 }
+
+// GetNotify return channel that send `ChangeInfo`
 func (m *Minesweeper) GetNotify() <-chan (<-chan ChangedInfo) {
 	return m.sendCh
 }
+
+// PressCell called when cell pressed
 func (m *Minesweeper) PressCell(row, column int) {
 	c := m.cells[row][column]
 	ch := make(chan ChangedInfo, len(c.to))
