@@ -159,7 +159,13 @@ type Minesweeper struct {
 }
 
 func New(h, w, maxBombNum int) *Minesweeper {
-	m := Minesweeper{Height: h, Width: w}
+	m := Minesweeper{
+		Height:    h,
+		Width:     w,
+		buf:       []ChangedInfo{},
+		sendCh:    make(chan (<-chan ChangedInfo)),
+		recieveCh: make(chan ChangedInfo, h*w),
+	}
 	cells := make([][]*cell, m.Height)
 	for i := 0; i < m.Height; i++ {
 		cells[i] = make([]*cell, m.Width)
@@ -172,13 +178,10 @@ func New(h, w, maxBombNum int) *Minesweeper {
 			}
 		}
 	}
-	m.buf = []ChangedInfo{}
-	m.recieveCh = make(chan ChangedInfo, m.Height*m.Width)
 	m.cells = cells
 	m.registerAdjacentCell()
 	m.wake()
 	m.setBombs(maxBombNum)
-	m.sendCh = make(chan (<-chan ChangedInfo))
 	return &m
 }
 
