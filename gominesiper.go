@@ -64,7 +64,10 @@ func (c *cell) press(ignore position) ChangedInfo {
 	if c.canPress() {
 		return ChangedInfo{X: -1, Y: -1}
 	}
-	return c.send(ignore)
+	ci := c.send(ignore)
+	ci.NumOfNearbyBomb = c.NearbyBombNum
+	c.notify(ci)
+	return ci
 }
 
 // send send `ChangeInfo` except `ignore` and notify own
@@ -77,11 +80,12 @@ func (c *cell) send(ignore position) ChangedInfo {
 		ch <- ci
 		close(ch)
 	}
+	// wait response
 	for range c.responseCh {
 
 	}
-	ci.NumOfNearbyBomb = c.NearbyBombNum
-	c.notify(ci)
+	// ci.NumOfNearbyBomb = c.NearbyBombNum
+	// c.notify(ci)
 	return ci
 }
 
@@ -125,7 +129,10 @@ func (c *cell) wake(h, w int) {
 				}
 				// response
 				// すべてレスポンスされるまで待つ
-				c.to[to] <- c.send(to)
+				ci := c.send(to)
+				ci.NumOfNearbyBomb = c.NearbyBombNum
+				c.notify(ci)
+				c.to[to] <- ci
 				close(c.to[to])
 				// fmt.Printf("recived (%d, %d):%v\n", hh, ww, nn)
 				return
