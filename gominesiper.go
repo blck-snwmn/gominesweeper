@@ -90,7 +90,7 @@ func (c *cell) send(ignore position) ChangedInfo {
 }
 
 // responseRecievedMessage response recieved message
-func (c *cell) responseRecievedMessage(recieved ChangedInfo) {
+func (c *cell) collectRecievedMessage(recieved ChangedInfo) {
 	c.sendMux.Lock()
 	defer c.sendMux.Unlock()
 	c.sendNum--
@@ -121,9 +121,10 @@ func (c *cell) wake(h, w int) {
 					c.notify(ci)
 					return
 				}
-				// receive
+				// response
+				// send したあとのレスポンスを待つ？
 				// 送信した数だけレスポンスが来るはず
-				c.responseRecievedMessage(recieved)
+				c.collectRecievedMessage(recieved)
 				if c.canPress() {
 					return
 				}
