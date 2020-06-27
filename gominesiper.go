@@ -78,7 +78,7 @@ func (c *cell) send(ignore position) ChangedInfo {
 			continue
 		}
 		ch <- ci
-		close(ch)
+		// close(ch)
 	}
 	// wait response
 	for range c.responseCh {
@@ -108,15 +108,16 @@ func (c *cell) wake(h, w int) {
 		go func(hh, ww int, nn position, ccf <-chan ChangedInfo) {
 			for recieved := range ccf {
 				to := position{row: recieved.Y, column: recieved.X}
+				defer close(c.to[to])
 				if c.hasBomb {
 					c.to[to] <- ChangedInfo{X: c.position.column, Y: c.position.row, State: Bomb}
-					close(c.to[to])
+					// close(c.to[to])
 					return
 				}
 				if c.NearbyBombNum > 0 {
 					ci := ChangedInfo{X: c.position.column, Y: c.position.row, State: Opened, NumOfNearbyBomb: c.NearbyBombNum}
 					c.to[to] <- ci
-					close(c.to[to])
+					// close(c.to[to])
 					c.canPress()
 					c.notify(ci)
 					return
@@ -134,7 +135,7 @@ func (c *cell) wake(h, w int) {
 				ci.NumOfNearbyBomb = c.NearbyBombNum
 				c.notify(ci)
 				c.to[to] <- ci
-				close(c.to[to])
+				// close(c.to[to])
 				// fmt.Printf("recived (%d, %d):%v\n", hh, ww, nn)
 				return
 			}
