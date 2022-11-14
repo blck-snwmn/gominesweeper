@@ -1,6 +1,6 @@
 module github.com/blck-snwmn/gominesweeper
 
-go 1.14
+go 1.19
 
 require (
 	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
