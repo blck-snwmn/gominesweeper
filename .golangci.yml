@@ -1,0 +1,13 @@
+version: "2"
+
+linters:
+  settings:
+    staticcheck:
+      checks:
+        # The legacy receive loop intentionally processes at most one message.
+        - -SA4004
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
