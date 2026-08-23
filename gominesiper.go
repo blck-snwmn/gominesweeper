@@ -102,39 +102,40 @@ func (c *cell) collectRecievedMessage(recieved ChangedInfo) {
 }
 
 func (c *cell) recieve(hh, ww int, nn position, ccf <-chan ChangedInfo) {
-	for recieved := range ccf {
-		to := position{row: recieved.Y, column: recieved.X}
-		defer close(c.to[to])
-		if c.hasBomb {
-			c.to[to] <- ChangedInfo{X: c.position.column, Y: c.position.row, State: Bomb}
-			// close(c.to[to])
-			return
-		}
-		if c.NearbyBombNum > 0 {
-			ci := ChangedInfo{X: c.position.column, Y: c.position.row, State: Opened, NumOfNearbyBomb: c.NearbyBombNum}
-			c.to[to] <- ci
-			// close(c.to[to])
-			c.canPress()
-			c.notify(ci)
-			return
-		}
-		// response
-		// send したあとのレスポンスを待つ？
-		// 送信した数だけレスポンスが来るはず
-		c.collectRecievedMessage(recieved)
-		if c.canPress() {
-			return
-		}
-		// response
-		// すべてレスポンスされるまで待つ
-		ci := c.send(to)
-		ci.NumOfNearbyBomb = c.NearbyBombNum
-		c.notify(ci)
-		c.to[to] <- ci
-		// close(c.to[to])
-		// fmt.Printf("recived (%d, %d):%v\n", hh, ww, nn)
+	recieved, ok := <-ccf
+	if !ok {
 		return
 	}
+	to := position{row: recieved.Y, column: recieved.X}
+	defer close(c.to[to])
+	if c.hasBomb {
+		c.to[to] <- ChangedInfo{X: c.position.column, Y: c.position.row, State: Bomb}
+		// close(c.to[to])
+		return
+	}
+	if c.NearbyBombNum > 0 {
+		ci := ChangedInfo{X: c.position.column, Y: c.position.row, State: Opened, NumOfNearbyBomb: c.NearbyBombNum}
+		c.to[to] <- ci
+		// close(c.to[to])
+		c.canPress()
+		c.notify(ci)
+		return
+	}
+	// response
+	// send したあとのレスポンスを待つ？
+	// 送信した数だけレスポンスが来るはず
+	c.collectRecievedMessage(recieved)
+	if c.canPress() {
+		return
+	}
+	// response
+	// すべてレスポンスされるまで待つ
+	ci := c.send(to)
+	ci.NumOfNearbyBomb = c.NearbyBombNum
+	c.notify(ci)
+	c.to[to] <- ci
+	// close(c.to[to])
+	// fmt.Printf("recived (%d, %d):%v\n", hh, ww, nn)
 }
 
 // wake start goroutine each `cell.from`.

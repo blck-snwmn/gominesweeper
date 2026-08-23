@@ -1,11 +1,5 @@
 version: "2"
 
-linters:
-  settings:
-    staticcheck:
-      checks:
-        - -SA4004
-
 formatters:
   enable:
     - gofmt
