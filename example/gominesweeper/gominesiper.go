@@ -45,27 +45,24 @@ func main() {
 
 	go func() {
 		sendCh := minesiper.GetNotify()
-		for {
-			select {
-			case changes := <-sendCh:
-				for ci := range changes {
-					var color string
-					if ci.State == gominesweeper.Bomb {
-						color = "#FF0000"
-					} else if (ci.X+ci.Y)%2 == 0 {
-						color = "#FFFFEE"
-					} else {
-						color = "#FFFF99"
-					}
-					canvasCtx.Set("fillStyle", color)
-					canvasCtx.Call("fillRect", ci.X*cellSize, ci.Y*cellSize, cellSize, cellSize)
-					canvasCtx.Set("fillStyle", "black")
-					canvasCtx.Set("font", fmt.Sprintf(fontFormat, cellSize/2))
-					if ci.State == gominesweeper.Bomb {
-						canvasCtx.Call("fillText", "x", ci.X*cellSize, (ci.Y+1)*cellSize)
-					} else {
-						canvasCtx.Call("fillText", ci.NumOfNearbyBomb, ci.X*cellSize, (ci.Y+1)*cellSize)
-					}
+		for changes := range sendCh {
+			for ci := range changes {
+				var color string
+				if ci.State == gominesweeper.Bomb {
+					color = "#FF0000"
+				} else if (ci.X+ci.Y)%2 == 0 {
+					color = "#FFFFEE"
+				} else {
+					color = "#FFFF99"
+				}
+				canvasCtx.Set("fillStyle", color)
+				canvasCtx.Call("fillRect", ci.X*cellSize, ci.Y*cellSize, cellSize, cellSize)
+				canvasCtx.Set("fillStyle", "black")
+				canvasCtx.Set("font", fmt.Sprintf(fontFormat, cellSize/2))
+				if ci.State == gominesweeper.Bomb {
+					canvasCtx.Call("fillText", "x", ci.X*cellSize, (ci.Y+1)*cellSize)
+				} else {
+					canvasCtx.Call("fillText", ci.NumOfNearbyBomb, ci.X*cellSize, (ci.Y+1)*cellSize)
 				}
 			}
 		}
