@@ -23,10 +23,11 @@ func main() {
 	canvasCtx := canvas.Call("getContext", "2d")
 	// font
 	canvasCtx.Call("scale", 1, 1)
-	fontFormat := "%dpx "
+	var fontFormat strings.Builder
+	fontFormat.WriteString("%dpx ")
 	for _, f := range strings.Split(canvasCtx.Get("font").String(), " ")[1:] {
-		fontFormat += f
-		fontFormat += " "
+		fontFormat.WriteString(f)
+		fontFormat.WriteString(" ")
 	}
 	minesiper := gominesweeper.New(height, width, maxBombNum)
 
@@ -58,7 +59,7 @@ func main() {
 				canvasCtx.Set("fillStyle", color)
 				canvasCtx.Call("fillRect", ci.X*cellSize, ci.Y*cellSize, cellSize, cellSize)
 				canvasCtx.Set("fillStyle", "black")
-				canvasCtx.Set("font", fmt.Sprintf(fontFormat, cellSize/2))
+				canvasCtx.Set("font", fmt.Sprintf(fontFormat.String(), cellSize/2))
 				if ci.State == gominesweeper.Bomb {
 					canvasCtx.Call("fillText", "x", ci.X*cellSize, (ci.Y+1)*cellSize)
 				} else {
@@ -68,7 +69,7 @@ func main() {
 		}
 	}()
 
-	canvas.Call("addEventListener", "mousedown", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+	canvas.Call("addEventListener", "mousedown", js.FuncOf(func(this js.Value, args []js.Value) any {
 		getInt := func(s string) int {
 			jv := args[0].Get(s)
 			if jv.Type() == js.TypeNumber {

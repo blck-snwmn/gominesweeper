@@ -3,7 +3,6 @@ package gominesweeper
 import (
 	"math/rand"
 	"sync"
-	"time"
 )
 
 type position struct {
@@ -278,7 +277,6 @@ func (m *Minesweeper) registerAdjacentCell() {
 }
 
 func (m *Minesweeper) setBombs(maxMombNum int) {
-	rand.Seed(time.Now().UnixNano())
 	bombNum := 0
 	// 爆弾の数`bombNum`は`bombNum`<=`maxMombNum`
 	// 同じcellへの更新が入ることを一旦許容
